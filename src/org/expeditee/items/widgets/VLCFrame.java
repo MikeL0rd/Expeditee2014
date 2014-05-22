@@ -22,14 +22,14 @@ import com.sun.jna.NativeLibrary;
 
 import org.expeditee.items.Text;
 
-public class VLC extends InteractiveWidget {
+public class VLCFrame extends InteractiveWidget {
 
 	protected EmbeddedMediaPlayerComponent _mediaPlayer;
 	protected JPanel _panel;
 	protected String _media;
 
-	public VLC(Text source, String[] args) {
-		super(source, new JPanel(), 1280, 1280, 720, 720);
+	public VLCFrame(Text source, String[] args) {
+		super(source, new JPanel(), 800, -1, 600, -1);
 
 		_panel = (JPanel) _swingComponent;
 		_media = (args != null && args.length > 0) ? args[0] : "";
@@ -70,13 +70,13 @@ public class VLC extends InteractiveWidget {
 		embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoSurface));
 		embeddedMediaPlayer.setPlaySubItems(true);
 
-/*		final PlayerControlsPanel controlsPanel = new PlayerControlsPanel(embeddedMediaPlayer);
-		PlayerVideoAdjustPanel videoAdjustPanel = new PlayerVideoAdjustPanel(embeddedMediaPlayer);*/
+		final PlayerControlsPanel controlsPanel = new PlayerControlsPanel(embeddedMediaPlayer);
+		PlayerVideoAdjustPanel videoAdjustPanel = new PlayerVideoAdjustPanel(embeddedMediaPlayer);
 
 		_panel.setLayout(new BorderLayout());
 		_panel.add(videoSurface, BorderLayout.CENTER);
-/*		_panel.add(controlsPanel, BorderLayout.SOUTH);
-		_panel.add(videoAdjustPanel, BorderLayout.EAST);*/
+		_panel.add(controlsPanel, BorderLayout.SOUTH);
+		_panel.add(videoAdjustPanel, BorderLayout.EAST);
 
 		_panel.setVisible(true);
 		if(_media != null)
