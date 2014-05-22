@@ -29,7 +29,7 @@ public class VLCFrame extends InteractiveWidget {
 	protected String _media;
 
 	public VLCFrame(Text source, String[] args) {
-		super(source, new JPanel(), 800, -1, 600, -1);
+		super(source, new JPanel(), 480, -1, 360, -1);
 
 		_panel = (JPanel) _swingComponent;
 		_media = (args != null && args.length > 0) ? args[0] : "";

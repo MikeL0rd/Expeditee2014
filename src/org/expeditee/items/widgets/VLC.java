@@ -29,7 +29,7 @@ public class VLC extends InteractiveWidget {
 	protected String _media;
 
 	public VLC(Text source, String[] args) {
-		super(source, new JPanel(), 1280, 1280, 720, 720);
+		super(source, new JPanel(), 480, -1, 360, -1);
 
 		_panel = (JPanel) _swingComponent;
 		_media = (args != null && args.length > 0) ? args[0] : "";
