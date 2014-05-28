@@ -24,14 +24,21 @@ import org.expeditee.items.Text;
 
 public class VLCFrame extends InteractiveWidget {
 
-	protected EmbeddedMediaPlayerComponent _mediaPlayer;
-	protected JPanel _panel;
-	protected String _media;
+	private JPanel panel;
+
+	private static EmbeddedMediaPlayerComponent _mediaPlayerComponent;
+	private static EmbeddedMediaPlayer _mediaPlayer;
+	private static Canvas _videoSurf;
+	private static PlayerControlsPanel _controlPanel;
+	private static PlayerVideoAdjustPanel _adjustPanel;
+	private static String _media;
+
+	public static boolean running = false;
 
 	public VLCFrame(Text source, String[] args) {
 		super(source, new JPanel(), 800, -1, 600, -1);
 
-		_panel = (JPanel) _swingComponent;
+		panel = (JPanel) _swingComponent;
 		_media = (args != null && args.length > 0) ? args[0] : "";
 		System.out.println(_media);
 
@@ -49,37 +56,47 @@ public class VLCFrame extends InteractiveWidget {
 	}
 
 	private void initPlayer() {
-		System.loadLibrary("jawt");
-		NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:/Program Files/VideoLAN/VLC/");
-		Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
+		if (running == false) {
+			// Loading VLC libraries
+			System.loadLibrary("jawt");
+			NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:/Program Files/VideoLAN/VLC/");
+			Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
 
-		EmbeddedMediaPlayerComponent mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
-		EmbeddedMediaPlayer embeddedMediaPlayer = mediaPlayerComponent.getMediaPlayer();
+			System.out.println("No previous VLC instance found");
 
-		Canvas videoSurface = new Canvas();
-		videoSurface.setBackground(Color.black);
-		videoSurface.setSize(800, 600);
+			_mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+			_mediaPlayer = _mediaPlayerComponent.getMediaPlayer();
 
-		ArrayList<String> vlcArgs = new ArrayList<String>();
-		vlcArgs.add("--no-plugins-cache");
-		vlcArgs.add("--no-video-title-show");
-		vlcArgs.add("--no-snapshot-preview");
+			_videoSurf = _mediaPlayerComponent.getVideoSurface();
+			_videoSurf.setBackground(Color.red);
 
-		MediaPlayerFactory mediaPlayerFactory = new MediaPlayerFactory(vlcArgs.toArray(new String[vlcArgs.size()]));
-		mediaPlayerFactory.setUserAgent("vlcj test player");
-		embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoSurface));
-		embeddedMediaPlayer.setPlaySubItems(true);
+			ArrayList<String> vlcArgs = new ArrayList<String>();
+			vlcArgs.add("--no-plugins-cache");
+			vlcArgs.add("--no-video-title-show");
+			vlcArgs.add("--no-snapshot-preview");
 
-		final PlayerControlsPanel controlsPanel = new PlayerControlsPanel(embeddedMediaPlayer);
-		PlayerVideoAdjustPanel videoAdjustPanel = new PlayerVideoAdjustPanel(embeddedMediaPlayer);
+			MediaPlayerFactory mediaPlayerFactory = new MediaPlayerFactory(vlcArgs.toArray(new String[vlcArgs.size()]));
+			mediaPlayerFactory.setUserAgent("vlcj test player");
+			_mediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(_videoSurf));
+			_mediaPlayer.setPlaySubItems(true);
 
-		_panel.setLayout(new BorderLayout());
-		_panel.add(videoSurface, BorderLayout.CENTER);
-		_panel.add(controlsPanel, BorderLayout.SOUTH);
-		_panel.add(videoAdjustPanel, BorderLayout.EAST);
+			_controlPanel = new PlayerControlsPanel(_mediaPlayer);
+			_adjustPanel = new PlayerVideoAdjustPanel(_mediaPlayer);
+		}
 
-		_panel.setVisible(true);
-		if(_media != null)
-			embeddedMediaPlayer.playMedia(_media);
+		panel.setLayout(new BorderLayout());
+		panel.add(_mediaPlayerComponent.getVideoSurface(), BorderLayout.CENTER);
+		panel.add(_controlPanel, BorderLayout.SOUTH);
+		panel.add(_adjustPanel, BorderLayout.EAST);
+		panel.setVisible(true);
+
+		if (running == true) {
+			_mediaPlayer.pause();
+			_mediaPlayer.play();
+		}
+		if (running == false && _media != null) {
+			_mediaPlayer.playMedia(_media);
+			running = true;
+		}
 	}
 }
