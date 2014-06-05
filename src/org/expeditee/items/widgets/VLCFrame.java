@@ -68,7 +68,7 @@ public class VLCFrame extends InteractiveWidget {
 			_mediaPlayer = _mediaPlayerComponent.getMediaPlayer();
 
 			_videoSurf = _mediaPlayerComponent.getVideoSurface();
-			_videoSurf.setBackground(Color.red);
+			_videoSurf.setBackground(Color.black);
 
 			ArrayList<String> vlcArgs = new ArrayList<String>();
 			vlcArgs.add("--no-plugins-cache");
