@@ -493,9 +493,9 @@ public class JfxBrowser extends DataFrameWidget {
 					
 					if (!JfxBrowser.this._urlField.isDisabled()) {
                         if (JfxBrowser.this._buttonDownId == MouseButton.MIDDLE || JfxBrowser.this._buttonDownId == MouseButton.SECONDARY) {
-                            if (!(e.isControlDown() || e.isAltDown() || e.isShiftDown() || e.isMetaDown())) {
-                                skin.positionCaret(skin.getIndex(e), true);
-                            }
+//                          if (!(e.isControlDown() || e.isAltDown() || e.isShiftDown() || e.isMetaDown())) {
+//                              skin.positionCaret(skin.getIndex(e), true);
+//                          }
                         }
                     }
 				}
@@ -1023,8 +1023,9 @@ public class JfxBrowser extends DataFrameWidget {
 	
 	private int getCaretFromCoord(TextField text, MouseEvent e) {
 		TextFieldSkin skin = (TextFieldSkin) text.getSkin();
-		HitInfo hit = skin.getIndex(e);
-		return hit.getInsertionIndex();
+//		HitInfo hit = skin.getIndex(e);
+//		return hit.getInsertionIndex();
+		return 0;
 	}
 	
 	/**
