@@ -36,7 +36,7 @@ public class VLCFrame extends InteractiveWidget {
 	public VLCFrame(Text source, String[] args) {
 		super(source, new JPanel(), 480, -1, 360, -1);
 
-		panel = (JPanel) swingComponent;
+		panel = (JPanel) _swingComponent;
 		media = (args != null && args.length > 0) ? args[0] : "";
 		System.out.println(media);
 
@@ -98,7 +98,6 @@ public class VLCFrame extends InteractiveWidget {
 		// Start the video
 		if (media != null) {
 			mediaPlayer.playMedia(media);
-			running = true;
 		}
 	}
 }
