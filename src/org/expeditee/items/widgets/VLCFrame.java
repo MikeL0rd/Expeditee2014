@@ -101,4 +101,17 @@ public class VLCFrame extends InteractiveWidget {
 			mediaPlayer.playMedia(media);
 		}
 	}
+
+	/* This will pause the player when you leave the frame,
+	 * and resume when you return
+	 * FIXME: You lose the video surface when you return to the frame
+	 */
+	@Override
+	protected void onParentStateChanged(int eventType) {	
+		if (eventType == 3 || eventType==6)
+			mediaPlayer.stop();
+		else if ( eventType == 4 || eventType==1)
+			mediaPlayer.play();
+		
+	}
 }

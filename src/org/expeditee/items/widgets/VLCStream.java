@@ -13,6 +13,7 @@ import uk.co.caprica.vlcj.binding.LibVlc;
 import uk.co.caprica.vlcj.component.EmbeddedMediaPlayerComponent;
 import uk.co.caprica.vlcj.player.MediaPlayerFactory;
 import uk.co.caprica.vlcj.player.embedded.EmbeddedMediaPlayer;
+import uk.co.caprica.vlcj.player.headless.HeadlessMediaPlayer;
 import uk.co.caprica.vlcj.runtime.RuntimeUtil;
 import uk.co.caprica.vlcj.test.basic.PlayerControlsPanel;
 import uk.co.caprica.vlcj.test.basic.PlayerVideoAdjustPanel;
@@ -22,17 +23,22 @@ import com.sun.jna.NativeLibrary;
 
 import org.expeditee.items.Text;
 
-// This version of the VLC widget does not include controls around the video
-public class VLC extends InteractiveWidget {
+// This version of the VLC widget will stream your webcam to others
+public class VLCStream extends InteractiveWidget {
 
 	private JPanel panel;
 
 	private EmbeddedMediaPlayerComponent mediaPlayerComponent;
 	private EmbeddedMediaPlayer mediaPlayer;
 	private Canvas videoSurf;
+	private PlayerControlsPanel controlPanel;
+	private PlayerVideoAdjustPanel adjustPanel;
 	private String media;
+	private String stream;
+	private HeadlessMediaPlayer headless;
 
-	public VLC(Text source, String[] args) {
+	public VLCStream(Text source, String[] args) {
+		// XXX: This widget version resizes weirdly, for some reason
 		super(source, new JPanel(), 480, -1, 360, -1);
 
 		panel = (JPanel) _swingComponent;
@@ -49,7 +55,8 @@ public class VLC extends InteractiveWidget {
 
 	/* This will get the video URL from arguments.
 	 * It can either be an http URL for sites such as youtube,
-	 * or can point to a file on your computer.
+	 * a file on your computer, or the direct IP address of
+	 * another Expeditee client that is streaming video.
 	 */
 	@Override
 	protected String[] getArgs() {
@@ -83,9 +90,26 @@ public class VLC extends InteractiveWidget {
 		mediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoSurf));
 		mediaPlayer.setPlaySubItems(true);
 
+		/* Start streaming over the network:
+		 * Location of webcam stream is hardcoded to the default location where webcam
+		 * is on GNU/Linux systems (/dev/video0).
+		 *
+		 * Broadcast IP address is also hardcoded, and would need to be changed when
+		 * a different IP address is used.
+		 */
+		stream = "v4l2:///dev/video0";
+		headless = mediaPlayerFactory.newHeadlessMediaPlayer();
+		headless.playMedia(stream,":sout=#transcode{vcodec=DIV3,vb=800,acodec=mp3,ab=128,channels=2,samplerate=44100}:standard{access=http,mux=asf,dst=192.168.0.62:8080/}",":live-caching=0",":sout-mux-caching=10" ,":sout-keep");
+
+		// Creating the controls that are used for the video
+		controlPanel = new PlayerControlsPanel(mediaPlayer);
+		adjustPanel = new PlayerVideoAdjustPanel(mediaPlayer);
+
 		// Packing video surface and controls into a JFrame
 		panel.setLayout(new BorderLayout());
 		panel.add(mediaPlayerComponent.getVideoSurface(), BorderLayout.CENTER);
+		panel.add(controlPanel, BorderLayout.SOUTH);
+		panel.add(adjustPanel, BorderLayout.EAST);
 		panel.setVisible(true);
 
 		// Start the video
