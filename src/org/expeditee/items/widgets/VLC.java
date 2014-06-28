@@ -22,18 +22,22 @@ import com.sun.jna.NativeLibrary;
 
 import org.expeditee.items.Text;
 
+// This version of the VLC widget does not include controls around the video
 public class VLC extends InteractiveWidget {
 
-	protected EmbeddedMediaPlayerComponent _mediaPlayer;
-	protected JPanel _panel;
-	protected String _media;
+	private JPanel panel;
+
+	private EmbeddedMediaPlayerComponent mediaPlayerComponent;
+	private EmbeddedMediaPlayer mediaPlayer;
+	private Canvas videoSurf;
+	private String media;
 
 	public VLC(Text source, String[] args) {
 		super(source, new JPanel(), 480, -1, 360, -1);
 
-		_panel = (JPanel) _swingComponent;
-		_media = (args != null && args.length > 0) ? args[0] : "";
-		System.out.println(_media);
+		panel = (JPanel) _swingComponent;
+		media = (args != null && args.length > 0) ? args[0] : "";
+		System.out.println(media);
 
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
@@ -43,43 +47,50 @@ public class VLC extends InteractiveWidget {
 		});
 	}
 
+	/* This will get the video URL from arguments.
+	 * It can either be an http URL for sites such as youtube,
+	 * or can point to a file on your computer.
+	 */
 	@Override
 	protected String[] getArgs() {
-		return new String[] { this._media };
+		return new String[] { this.media };
 	}
 
 	private void initPlayer() {
+		// Loading Native VLC libraries for Windows
 		System.loadLibrary("jawt");
-		NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(), "C:/Program Files/VideoLAN/VLC/");
+		NativeLibrary.addSearchPath(RuntimeUtil.getLibVlcLibraryName(),
+				"C:/Program Files/VideoLAN/VLC/");
 		Native.loadLibrary(RuntimeUtil.getLibVlcLibraryName(), LibVlc.class);
 
-		EmbeddedMediaPlayerComponent mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
-		EmbeddedMediaPlayer embeddedMediaPlayer = mediaPlayerComponent.getMediaPlayer();
+		// Creating VLC media components, which are used used to create a VLC instance
+		mediaPlayerComponent = new EmbeddedMediaPlayerComponent();
+		mediaPlayer = mediaPlayerComponent.getMediaPlayer();
 
-		Canvas videoSurface = new Canvas();
-		videoSurface.setBackground(Color.black);
-		videoSurface.setSize(800, 600);
+		// Setting our video surface to the VLC media components
+		videoSurf = mediaPlayerComponent.getVideoSurface();
+		videoSurf.setBackground(Color.black);
 
+		// Setting arguments to pass to VLC
 		ArrayList<String> vlcArgs = new ArrayList<String>();
 		vlcArgs.add("--no-plugins-cache");
 		vlcArgs.add("--no-video-title-show");
 		vlcArgs.add("--no-snapshot-preview");
 
+		// Creating the video player itself
 		MediaPlayerFactory mediaPlayerFactory = new MediaPlayerFactory(vlcArgs.toArray(new String[vlcArgs.size()]));
 		mediaPlayerFactory.setUserAgent("vlcj test player");
-		embeddedMediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoSurface));
-		embeddedMediaPlayer.setPlaySubItems(true);
+		mediaPlayer.setVideoSurface(mediaPlayerFactory.newVideoSurface(videoSurf));
+		mediaPlayer.setPlaySubItems(true);
 
-/*		final PlayerControlsPanel controlsPanel = new PlayerControlsPanel(embeddedMediaPlayer);
-		PlayerVideoAdjustPanel videoAdjustPanel = new PlayerVideoAdjustPanel(embeddedMediaPlayer);*/
+		// Packing video surface and controls into a JFrame
+		panel.setLayout(new BorderLayout());
+		panel.add(mediaPlayerComponent.getVideoSurface(), BorderLayout.CENTER);
+		panel.setVisible(true);
 
-		_panel.setLayout(new BorderLayout());
-		_panel.add(videoSurface, BorderLayout.CENTER);
-/*		_panel.add(controlsPanel, BorderLayout.SOUTH);
-		_panel.add(videoAdjustPanel, BorderLayout.EAST);*/
-
-		_panel.setVisible(true);
-		if(_media != null)
-			embeddedMediaPlayer.playMedia(_media);
+		// Start the video
+		if (media != null) {
+			mediaPlayer.playMedia(media);
+		}
 	}
 }

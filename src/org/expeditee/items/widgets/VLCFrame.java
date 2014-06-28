@@ -22,6 +22,7 @@ import com.sun.jna.NativeLibrary;
 
 import org.expeditee.items.Text;
 
+// This version of the VLC widget includes controls around the video
 public class VLCFrame extends InteractiveWidget {
 
 	private JPanel panel;
